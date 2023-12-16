@@ -8,22 +8,6 @@
 from django.db import models
 
 
-class Addresses(models.Model):
-    id = models.IntegerField(primary_key=True)
-    address_line_1 = models.CharField(blank=True, null=True)
-    address_line_2 = models.CharField(blank=True, null=True)
-    country = models.CharField(blank=True, null=True)
-    state = models.CharField(blank=True, null=True)
-    city = models.CharField(blank=True, null=True)
-    postal_code = models.CharField(blank=True, null=True)
-    longitude = models.FloatField(blank=True, null=True)
-    latitude = models.FloatField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'addresses'
-
-
 class Agents(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.ForeignKey('Users', models.DO_NOTHING, blank=True, null=True)
@@ -90,15 +74,6 @@ class Favorites(models.Model):
     class Meta:
         managed = False
         db_table = 'favorites'
-
-
-class Images(models.Model):
-    id = models.IntegerField(primary_key=True)
-    image_url = models.CharField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'images'
 
 
 class Licenses(models.Model):
