@@ -19,12 +19,6 @@ class Image(models.Model):
     class Meta:
         db_table = 'images'
 
-class Prices(models.Model):
-    amount = models.DecimalField(max_digits=15, decimal_places=4, null=True)
-    currency = models.CharField(max_length=4, null=True)
-
-    class Meta:
-        db_table = 'prices'
 
 class Address(models.Model):
     address_line_1 = models.CharField(max_length=255,)
@@ -135,14 +129,19 @@ def update_agent_rating(sender, instance, **kwargs):
     agent.rating = Reviews.objects.filter(agent=agent).aggregate(Avg('rating'))['rating__avg']
     agent.save()
 
-
+class CURRENCY_CHOICES(models.TextChoices):
+    USD = 'USD'
+    EUR = 'EUR'
+    GBP = 'GBP'
+    UZS = 'UZS'
 
 class Estate(models.Model):
     title = models.CharField(blank=True, null=True)
     description = models.TextField(blank=True, null=True, db_comment='Description of the estate')
     type = models.CharField(blank=True, null=True)
-    price = models.ForeignKey(Prices, models.DO_NOTHING)
-    market_value = models.ForeignKey(Prices, models.DO_NOTHING, related_name='estate_market_value', blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
+    market_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     address = models.ForeignKey(Address, models.DO_NOTHING, blank=True, null=True)
     bedrooms = models.PositiveSmallIntegerField(blank=True, null=True)
     bathrooms = models.PositiveSmallIntegerField(blank=True, null=True)
