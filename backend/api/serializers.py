@@ -9,11 +9,6 @@ class ImageSerializer(ModelSerializer):
         model = Image
         fields = ['__all__']
 
-class PricesSerializer(ModelSerializer):
-    class Meta:
-        model = Prices
-        fields = ['__all__']
-
 class AddressSerializer(ModelSerializer):
     class Meta:
         model = Address
@@ -41,13 +36,70 @@ class AgentsSerializer(ModelSerializer):
 
     class Meta:
         model = Agents
-        fields = ['id', 'passport', 'user']
+        fields = ['__all__']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user_serializer = UsersSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
-        user = user_serializer.save()
+        user = user_serializer.save(role='AGENT')
         account = Agents.objects.create(user=user, **validated_data)
         return account
 
+class CustomersSerializer(ModelSerializer):
+    user = UsersSerializer()
+
+    class Meta:
+        model = Customers
+        fields = ['__all__']
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_serializer = UsersSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save(role='CUSTOMER')
+        account = Customers.objects.create(user=user, **validated_data)
+        return account
+
+
+class ContactInfoSerializer(ModelSerializer):
+    class Meta:
+        model = ContactInfo
+        fields = ['__all__']
+
+class LicensesSerializer(ModelSerializer):
+    class Meta:
+        model = Licenses
+        fields = ['__all__']
+
+class ReviewsSerializer(ModelSerializer):
+    class Meta:
+        model = Reviews
+        fields = ['__all__']
+
+
+class EstateSerializer(ModelSerializer):
+    class Meta:
+        model = Estate
+        fields = ['__all__']
+
+class AmenitiesSerializer(ModelSerializer):
+    class Meta:
+        model = Amenities
+        fields = ['__all__']
+
+class ContractsSerializer(ModelSerializer):
+    class Meta:
+        model = Contracts
+        fields = ['__all__']
+
+
+class FavoritesSerializer(ModelSerializer):
+    class Meta:
+        model = Favorites
+        fields = ['__all__']
+
+class PostsSerializer(ModelSerializer):
+    class Meta:
+        model = Posts
+        fields = ['__all__']
