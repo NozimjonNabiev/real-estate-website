@@ -1,32 +1,11 @@
 from .models import *
 from .serializers import *
+from .permissions import *
 
-from rest_framework.permissions import *
 from rest_framework.viewsets import ModelViewSet
 
+
 # 'create', 'retrieve', 'list', 'destroy', 'update', 'partial_update'
-
-class IsAdmin(BasePermission):
-    """
-    Allows access only to admin users.
-    """
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.role == 'ADMIN')
-
-class IsSelfOrAdmin(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.user == request.user or request.user.role == 'ADMIN'
-
-class IsAgent(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.role == 'AGENT')
-
-class IsAdminOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.role == 'ADMIN') or request.method in SAFE_METHODS
-    
-
-
 
 class UserViewSet(ModelViewSet):
     queryset = Users.objects.all()
@@ -38,7 +17,7 @@ class AgentsViewSet(ModelViewSet):
     serializer_class = AgentsSerializer
 
     def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'retrieve']:
+        if self.action in ['create', 'update', 'partial_update', 'retrieve']:
             self.permission_classes = [IsSelfOrAdmin,]
         else:
             self.permission_classes = [IsAdmin,]
@@ -69,24 +48,7 @@ class ContactInfoViewSet(ModelViewSet):
             self.permission_classes = [IsAdmin,]
         return super(CustomersViewSet, self).get_permissions()
 
-class LicensesViewSet(ModelViewSet):
-    queryset = Licenses.objects.all()
-    serializer_class = LicensesSerializer
 
-    def get_permissions(self):
-        if self.action in ['list']:
-            self.permission_classes = [IsAdmin,]
-        else:
-            self.permission_classes = [IsSelfOrAdmin,]
-        return super(CustomersViewSet, self).get_permissions()
-
-
-class IsSelfCustomerOrAgent(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return (obj.agent.user == request.user and request.user.role == 'AGENT') or (obj.customer.user == request.user and request.user.role == 'CUSTOMER')
-class IsSelfAndCustomer(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return (obj.customer.user == request.user and request.user.role == 'CUSTOMER')
 class ReviewsViewSet(ModelViewSet):
     queryset = Reviews.objects.all()
     serializer_class = ReviewsSerializer

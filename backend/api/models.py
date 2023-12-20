@@ -12,6 +12,7 @@ from django.db.models import Avg
 from django.db.models.signals import post_save
 
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.hashers import make_password
 
 class Image(models.Model):
     image = models.ImageField()
@@ -45,14 +46,23 @@ class USER_ROLES(models.TextChoices):
     ADMIN = 'Admin'
 
 class UsersManager(BaseUserManager):
-    def create_user(self, email, role, password=None, **extra_fields):
+    def _create_user(self, email, role, password, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, role=role, **extra_fields)
-        user.set_password(password)
+        user.password = make_password(password)
         user.save(using=self._db)
         return user
+
+    def create_customer(self, email, role=USER_ROLES.CUSTOMER, password=None, **extra_fields):
+        return self._create_user(email, role, password, **extra_fields)
+
+    def create_agent(self, email, role=USER_ROLES.AGENT, password=None, **extra_fields):
+        return self._create_user(email, role, password, **extra_fields)
+
+    def create_superuser(self, email, role=USER_ROLES.ADMIN, password=None, **extra_fields):
+        return self._create_user(email, role, password, **extra_fields)
 
 class Users(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=255, choices=USER_ROLES.choices)
@@ -65,7 +75,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
     objects = UsersManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['role']
 
     class Meta:
         db_table = 'users'
@@ -85,23 +94,17 @@ class ContactInfo(models.Model):
     class Meta:
         db_table = 'contact_info'
 
-class Licenses(models.Model):
-    file = models.FileField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'licenses'
-
 class Agents(models.Model):
-    user = models.OneToOneField(Users, models.SET_NULL, null=True)
+    user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
     contact = models.ForeignKey(ContactInfo, models.SET_NULL, null=True)
-    license = models.OneToOneField(Licenses, models.SET_NULL, null=True)
+    license = models.FileField(default='No License')
     rating = models.FloatField(blank=True, null=True)
 
     class Meta:
         db_table = 'agents'
 
 class Customers(models.Model):
-    user = models.ForeignKey(Users, models.SET_NULL, null=True)
+    user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
     address = models.ForeignKey(Address, models.SET_NULL, blank=True, null=True)
 
     class Meta:
