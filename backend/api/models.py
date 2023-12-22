@@ -67,8 +67,8 @@ class UsersManager(BaseUserManager):
 class Users(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=255, choices=USER_ROLES.choices)
     email = models.EmailField(max_length=255, unique=True)
-    first_name = models.CharField(blank=True, null=True)
-    last_name = models.CharField(blank=True, null=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     profile_image = models.ForeignKey(Image, models.SET_NULL, blank=True, null=True)
 
@@ -139,9 +139,9 @@ class CURRENCY_CHOICES(models.TextChoices):
     UZS = 'UZS'
 
 class Estate(models.Model):
-    title = models.CharField(blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True, db_comment='Description of the estate')
-    type = models.CharField(blank=True, null=True)
+    type = models.CharField(max_length=255, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
     market_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
