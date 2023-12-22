@@ -5,271 +5,189 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+
 from django.db import models
+from django.dispatch import receiver
+from django.db.models import Avg
+from django.db.models.signals import post_save
 
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.hashers import make_password
 
-class Addresses(models.Model):
-    id = models.IntegerField(primary_key=True)
-    address_line_1 = models.CharField(blank=True, null=True)
-    address_line_2 = models.CharField(blank=True, null=True)
-    country = models.CharField(blank=True, null=True)
-    state = models.CharField(blank=True, null=True)
-    city = models.CharField(blank=True, null=True)
-    postal_code = models.CharField(blank=True, null=True)
-    longitude = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    latitude = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+class Image(models.Model):
+    image = models.ImageField()
 
     class Meta:
-        managed = False
-        db_table = 'addresses'
-
-
-class Agents(models.Model):
-    id = models.IntegerField(primary_key=True)
-    user_id = models.IntegerField(blank=True, null=True)
-    contact = models.ForeignKey('ContactInfo', models.DO_NOTHING, blank=True, null=True)
-    license = models.ForeignKey('Licenses', models.DO_NOTHING, blank=True, null=True)
-    rating = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'agents'
-
-
-class Amenities(models.Model):
-    id = models.IntegerField(primary_key=True)
-    property = models.ForeignKey('Properties', models.DO_NOTHING, blank=True, null=True)
-    name = models.CharField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    image_id = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'amenities'
-
-
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=150)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group'
-
-
-class AuthGroupPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group_permissions'
-        unique_together = (('group', 'permission'),)
-
-
-class AuthPermission(models.Model):
-    name = models.CharField(max_length=255)
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-    codename = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_permission'
-        unique_together = (('content_type', 'codename'),)
-
-
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField()
-    is_active = models.BooleanField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
-
-
-class AuthUserGroups(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_groups'
-        unique_together = (('user', 'group'),)
-
-
-class AuthUserUserPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_user_permissions'
-        unique_together = (('user', 'permission'),)
-
-
-class Blogs(models.Model):
-    id = models.IntegerField(primary_key=True)
-    user_id = models.IntegerField(blank=True, null=True)
-    title = models.CharField(blank=True, null=True)
-    body = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'blogs'
-
-
-class ContactInfo(models.Model):
-    id = models.IntegerField(primary_key=True)
-    user_id = models.IntegerField(blank=True, null=True)
-    name = models.CharField(blank=True, null=True)
-    email = models.CharField(max_length=254, blank=True, null=True)
-    phone = models.CharField(blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'contact_info'
-
-
-class Customers(models.Model):
-    id = models.IntegerField(primary_key=True)
-    user_id = models.IntegerField(blank=True, null=True)
-    address = models.ForeignKey(Addresses, models.DO_NOTHING, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'customers'
-
-
-class DjangoAdminLog(models.Model):
-    action_time = models.DateTimeField()
-    object_id = models.TextField(blank=True, null=True)
-    object_repr = models.CharField(max_length=200)
-    action_flag = models.SmallIntegerField()
-    change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'django_admin_log'
-
-
-class DjangoContentType(models.Model):
-    app_label = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'django_content_type'
-        unique_together = (('app_label', 'model'),)
-
-
-class DjangoMigrations(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class DjangoSession(models.Model):
-    session_key = models.CharField(primary_key=True, max_length=40)
-    session_data = models.TextField()
-    expire_date = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_session'
-
-
-class Favorites(models.Model):
-    customer = models.ForeignKey(Customers, models.DO_NOTHING, blank=True, null=True)
-    property = models.ForeignKey('Properties', models.DO_NOTHING, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'favorites'
-
-
-class Images(models.Model):
-    id = models.IntegerField(primary_key=True)
-    image_url = models.CharField(blank=True, null=True)
-
-    class Meta:
-        managed = False
         db_table = 'images'
 
 
-class Licenses(models.Model):
-    id = models.IntegerField(primary_key=True)
-    file = models.CharField(blank=True, null=True)
+class Address(models.Model):
+    address_line_1 = models.CharField(max_length=255,)
+    address_line_2 = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=7, blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+
+    @staticmethod
+    def create_from_geodata(longitute: float, latitute: float) -> "Address":
+        pass
+    
+    class Meta:
+        db_table = 'addresses'
+
+
+
+class USER_ROLES(models.TextChoices):
+    CUSTOMER = 'Customer'
+    AGENT = 'Agent'
+    ADMIN = 'Admin'
+
+class UsersManager(BaseUserManager):
+    def _create_user(self, email, role, password, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, role=role, **extra_fields)
+        user.password = make_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_customer(self, email, role=USER_ROLES.CUSTOMER, password=None, **extra_fields):
+        return self._create_user(email, role, password, **extra_fields)
+
+    def create_agent(self, email, role=USER_ROLES.AGENT, password=None, **extra_fields):
+        return self._create_user(email, role, password, **extra_fields)
+
+    def create_superuser(self, email, role=USER_ROLES.ADMIN, password=None, **extra_fields):
+        return self._create_user(email, role, password, **extra_fields)
+
+class Users(AbstractBaseUser, PermissionsMixin):
+    role = models.CharField(max_length=255, choices=USER_ROLES.choices)
+    email = models.EmailField(max_length=255, unique=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    profile_image = models.ForeignKey(Image, models.SET_NULL, blank=True, null=True)
+
+    objects = UsersManager()
+
+    USERNAME_FIELD = 'email'
 
     class Meta:
-        managed = False
-        db_table = 'licenses'
+        db_table = 'users'
+
+    def __str__(self) -> str:
+        return self.email
 
 
-class Prices(models.Model):
-    id = models.IntegerField(primary_key=True)
-    amount = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    currency = models.CharField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'prices'
 
 
-class Properties(models.Model):
-    id = models.IntegerField(primary_key=True)
-    title = models.CharField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True, db_comment='Description of the property')
-    type = models.CharField(blank=True, null=True)
-    price = models.ForeignKey(Prices, models.DO_NOTHING, blank=True, null=True)
-    market_value = models.ForeignKey(Prices, models.DO_NOTHING, db_column='market_value', related_name='properties_market_value_set', blank=True, null=True)
-    address = models.ForeignKey(Addresses, models.DO_NOTHING, blank=True, null=True)
-    bedrooms = models.IntegerField(blank=True, null=True)
-    bathrooms = models.IntegerField(blank=True, null=True)
-    area = models.IntegerField(blank=True, null=True)
-    status = models.CharField(blank=True, null=True)
-    agent = models.ForeignKey(Agents, models.DO_NOTHING, blank=True, null=True)
-    date_listed = models.DateTimeField(blank=True, null=True, db_comment='Date when the property was listed')
+class ContactInfo(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255)
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
-        db_table = 'properties'
+        db_table = 'contact_info'
 
+class Agents(models.Model):
+    user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
+    contact = models.ForeignKey(ContactInfo, models.SET_NULL, null=True)
+    license = models.FileField(default='No License')
+    rating = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'agents'
+
+class Customers(models.Model):
+    user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
+    address = models.ForeignKey(Address, models.SET_NULL, blank=True, null=True)
+
+    class Meta:
+        db_table = 'customers'
 
 class Reviews(models.Model):
-    id = models.IntegerField(primary_key=True)
-    property = models.ForeignKey(Properties, models.DO_NOTHING, blank=True, null=True)
-    customer = models.ForeignKey(Customers, models.DO_NOTHING, blank=True, null=True)
-    rating = models.IntegerField(blank=True, null=True)
+    RATINGS = [
+        (1, '1'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, '5'),
+    ]
+    agent = models.ForeignKey(Agents, models.CASCADE)
+    customer = models.ForeignKey(Customers, models.DO_NOTHING)
+    rating = models.IntegerField(choices=RATINGS)
     comment = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'reviews'
 
+@receiver(post_save, sender=Reviews)
+def update_agent_rating(sender, instance, **kwargs):
+    agent = instance.agent
+    agent.rating = Reviews.objects.filter(agent=agent).aggregate(Avg('rating'))['rating__avg']
+    agent.save()
 
-class Transactions(models.Model):
-    id = models.IntegerField(primary_key=True)
-    price = models.ForeignKey(Prices, models.DO_NOTHING, blank=True, null=True)
-    date = models.DateTimeField(blank=True, null=True)
+class CURRENCY_CHOICES(models.TextChoices):
+    USD = 'USD'
+    EUR = 'EUR'
+    GBP = 'GBP'
+    UZS = 'UZS'
+
+class Estate(models.Model):
+    title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True, db_comment='Description of the estate')
+    type = models.CharField(max_length=255, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
+    market_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    address = models.ForeignKey(Address, models.DO_NOTHING, blank=True, null=True)
+    bedrooms = models.PositiveSmallIntegerField(blank=True, null=True)
+    bathrooms = models.PositiveSmallIntegerField(blank=True, null=True)
+    area = models.FloatField(blank=True, null=True)
+    status = models.BooleanField(default=True)
+    agent = models.ForeignKey(Agents, models.DO_NOTHING)
+    date_listed = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        managed = False
-        db_table = 'transactions'
+        db_table = 'estate'
+
+class Amenities(models.Model):
+    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    image = models.ForeignKey(Image, models.SET_NULL, blank=True, null=True)
+
+    class Meta:
+        db_table = 'amenities'
+
+class Contracts(models.Model):
+    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    agent = models.ForeignKey(Agents, models.SET_NULL, null=True)
+    customer = models.ForeignKey(Customers, models.SET_NULL, null=True)
+    date = models.DateTimeField()
+
+    class Meta:
+        db_table = 'contracts'
+
+
+
+
+class Favorites(models.Model):
+    customer = models.ForeignKey(Customers, models.CASCADE)
+    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'favorites'
+
+class Posts(models.Model):
+    user = models.ForeignKey(Users, models.DO_NOTHING)
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+
+    class Meta:
+        db_table = 'posts'
