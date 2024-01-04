@@ -3,7 +3,7 @@ from .serializers import *
 from .permissions import *
 
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework.permissions import AllowAny
 
 # 'create', 'retrieve', 'list', 'destroy', 'update', 'partial_update'
 
