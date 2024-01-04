@@ -46,23 +46,28 @@ class USER_ROLES(models.TextChoices):
     ADMIN = 'Admin'
 
 class UsersManager(BaseUserManager):
-    def _create_user(self, email, role, password, **extra_fields):
+    def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+
         email = self.normalize_email(email)
-        user = self.model(email=email, role=role, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
+
         return user
 
-    def create_customer(self, email, role=USER_ROLES.CUSTOMER, password=None, **extra_fields):
-        return self._create_user(email, role, password, **extra_fields)
+    def create_customer(self, email, password, **extra_fields):
+        extra_fields.setdefault('role', USER_ROLES.CUSTOMER)
+        return self._create_user(email, password, **extra_fields)
 
-    def create_agent(self, email, role=USER_ROLES.AGENT, password=None, **extra_fields):
-        return self._create_user(email, role, password, **extra_fields)
+    def create_agent(self, email, password, **extra_fields):
+        extra_fields.setdefault('role', USER_ROLES.AGENT)
+        return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, role=USER_ROLES.ADMIN, password=None, **extra_fields):
-        return self._create_user(email, role, password, **extra_fields)
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields.setdefault('role', USER_ROLES.ADMIN)
+        return self._create_user(email, password, **extra_fields)
 
 class Users(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=255, choices=USER_ROLES.choices)
