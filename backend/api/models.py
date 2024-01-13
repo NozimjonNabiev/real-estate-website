@@ -46,23 +46,28 @@ class USER_ROLES(models.TextChoices):
     ADMIN = 'Admin'
 
 class UsersManager(BaseUserManager):
-    def _create_user(self, email, role, password, **extra_fields):
+    def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+
         email = self.normalize_email(email)
-        user = self.model(email=email, role=role, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
+
         return user
 
-    def create_customer(self, email, role=USER_ROLES.CUSTOMER, password=None, **extra_fields):
-        return self._create_user(email, role, password, **extra_fields)
+    def create_customer(self, email, password, **extra_fields):
+        extra_fields.setdefault('role', USER_ROLES.CUSTOMER)
+        return self._create_user(email, password, **extra_fields)
 
-    def create_agent(self, email, role=USER_ROLES.AGENT, password=None, **extra_fields):
-        return self._create_user(email, role, password, **extra_fields)
+    def create_agent(self, email, password, **extra_fields):
+        extra_fields.setdefault('role', USER_ROLES.AGENT)
+        return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, role=USER_ROLES.ADMIN, password=None, **extra_fields):
-        return self._create_user(email, role, password, **extra_fields)
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields.setdefault('role', USER_ROLES.ADMIN)
+        return self._create_user(email, password, **extra_fields)
 
 class Users(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=255, choices=USER_ROLES.choices)
@@ -93,6 +98,9 @@ class ContactInfo(models.Model):
 
     class Meta:
         db_table = 'contact_info'
+    
+    def __str__(self) -> str:
+        return self.name
 
 class Agents(models.Model):
     user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
@@ -103,12 +111,18 @@ class Agents(models.Model):
     class Meta:
         db_table = 'agents'
 
+    def __str__(self) -> str:
+        return self.user.email
+
 class Customers(models.Model):
     user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
     address = models.ForeignKey(Address, models.SET_NULL, blank=True, null=True)
 
     class Meta:
         db_table = 'customers'
+    
+    def __str__(self) -> str:
+        return self.user.email
 
 class Reviews(models.Model):
     RATINGS = [
@@ -125,6 +139,9 @@ class Reviews(models.Model):
 
     class Meta:
         db_table = 'reviews'
+    
+    def __str__(self) -> str:
+        return f'{self.agent} - {self.customer}'
 
 @receiver(post_save, sender=Reviews)
 def update_agent_rating(sender, instance, **kwargs):
@@ -156,8 +173,11 @@ class Estate(models.Model):
     class Meta:
         db_table = 'estate'
 
+    def __str__(self) -> str:
+        return self.title
+
 class Amenities(models.Model):
-    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     image = models.ForeignKey(Image, models.SET_NULL, blank=True, null=True)
@@ -166,23 +186,29 @@ class Amenities(models.Model):
         db_table = 'amenities'
 
 class Contracts(models.Model):
-    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
     agent = models.ForeignKey(Agents, models.SET_NULL, null=True)
     customer = models.ForeignKey(Customers, models.SET_NULL, null=True)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'contracts'
+
+    def __str__(self) -> str:
+        return f'{self.estate} - {self.customer}'
 
 
 
 
 class Favorites(models.Model):
     customer = models.ForeignKey(Customers, models.CASCADE)
-    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'favorites'
+
+    def __str__(self) -> str:
+        return f'{self.customer} - {self.estate}'
 
 class Posts(models.Model):
     user = models.ForeignKey(Users, models.DO_NOTHING)
@@ -191,3 +217,6 @@ class Posts(models.Model):
 
     class Meta:
         db_table = 'posts'
+
+    def __str__(self) -> str:
+        return self.title

@@ -113,15 +113,33 @@ class EstateSerializer(ModelSerializer):
         model = Estate
         fields = '__all__'
 
+    def create(self, validated_data):
+        if validated_data['agent'] == Agents.objects.get(user=self.context['request'].user):
+            return super().create(validated_data)
+        else:
+            raise ValidationError('You are not allowed to add estates to this agent')
+
 class AmenitiesSerializer(ModelSerializer):
     class Meta:
         model = Amenities
         fields = '__all__'
 
+    def create(self, validated_data):
+        if validated_data['estate'] in Estate.objects.filter(agent__user=self.context['request'].user):
+            return super().create(validated_data)
+        else:
+            raise ValidationError('You are not allowed to add amenities to this estate')
+
 class ContractsSerializer(ModelSerializer):
     class Meta:
         model = Contracts
         fields = '__all__'
+
+    def create(self, validated_data):
+        if validated_data['agent'] == validated_data['estate'].agent and validated_data['agent'] == Agents.objects.get(user=self.context['request'].user):
+            return super().create(validated_data)
+        else:
+            raise ValidationError('You are not allowed to add contracts to this agent with this estate or you are not the agent of estate')
 
 
 class FavoritesSerializer(ModelSerializer):
