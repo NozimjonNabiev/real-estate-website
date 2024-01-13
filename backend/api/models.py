@@ -98,6 +98,9 @@ class ContactInfo(models.Model):
 
     class Meta:
         db_table = 'contact_info'
+    
+    def __str__(self) -> str:
+        return self.name
 
 class Agents(models.Model):
     user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
@@ -108,12 +111,18 @@ class Agents(models.Model):
     class Meta:
         db_table = 'agents'
 
+    def __str__(self) -> str:
+        return self.user.email
+
 class Customers(models.Model):
     user = models.OneToOneField(Users, models.DO_NOTHING, null=True)
     address = models.ForeignKey(Address, models.SET_NULL, blank=True, null=True)
 
     class Meta:
         db_table = 'customers'
+    
+    def __str__(self) -> str:
+        return self.user.email
 
 class Reviews(models.Model):
     RATINGS = [
@@ -130,6 +139,9 @@ class Reviews(models.Model):
 
     class Meta:
         db_table = 'reviews'
+    
+    def __str__(self) -> str:
+        return f'{self.agent} - {self.customer}'
 
 @receiver(post_save, sender=Reviews)
 def update_agent_rating(sender, instance, **kwargs):
@@ -161,8 +173,11 @@ class Estate(models.Model):
     class Meta:
         db_table = 'estate'
 
+    def __str__(self) -> str:
+        return self.title
+
 class Amenities(models.Model):
-    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     image = models.ForeignKey(Image, models.SET_NULL, blank=True, null=True)
@@ -171,23 +186,29 @@ class Amenities(models.Model):
         db_table = 'amenities'
 
 class Contracts(models.Model):
-    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
     agent = models.ForeignKey(Agents, models.SET_NULL, null=True)
     customer = models.ForeignKey(Customers, models.SET_NULL, null=True)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'contracts'
+
+    def __str__(self) -> str:
+        return f'{self.estate} - {self.customer}'
 
 
 
 
 class Favorites(models.Model):
     customer = models.ForeignKey(Customers, models.CASCADE)
-    property = models.ForeignKey(Estate, models.SET_NULL, null=True)
+    estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'favorites'
+
+    def __str__(self) -> str:
+        return f'{self.customer} - {self.estate}'
 
 class Posts(models.Model):
     user = models.ForeignKey(Users, models.DO_NOTHING)
@@ -196,3 +217,6 @@ class Posts(models.Model):
 
     class Meta:
         db_table = 'posts'
+
+    def __str__(self) -> str:
+        return self.title
