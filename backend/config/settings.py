@@ -25,7 +25,7 @@ SECRET_KEY = config('SECRET_KEY', cast=str, default='django-123')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["firdavsbek.pythonanywhere.com", "127.0.0.1"]
+ALLOWED_HOSTS = ["firdavsbek.pythonanywhere.com", "vivahomes.uz", "3.80.114.155", "127.0.0.1"]
 
 
 # Application definition
