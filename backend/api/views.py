@@ -17,7 +17,7 @@ from dateutil.relativedelta import relativedelta
 class UserViewSet(ModelViewSet):
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdmin,]
 
 class AgentsViewSet(ModelViewSet):
     queryset = Agents.objects.all()
@@ -27,7 +27,7 @@ class AgentsViewSet(ModelViewSet):
         if self.action in ['update', 'partial_update', 'retrieve']:
             self.permission_classes = [IsSelfOrAdmin,]
         else:
-            self.permission_classes = [AllowAny]
+            self.permission_classes = [IsAdmin,]
         return super(AgentsViewSet, self).get_permissions()
 
 class CustomersViewSet(ModelViewSet):
