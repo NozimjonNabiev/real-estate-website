@@ -1,5 +1,5 @@
 import pickle
-from tf import Model
+from .tf import Model
 
 
 class RegressionModel(Model): pass
