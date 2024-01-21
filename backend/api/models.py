@@ -163,6 +163,7 @@ class Estate(models.Model):
     area = models.FloatField(blank=True, null=True)
     status = models.BooleanField(default=True)
     agent = models.ForeignKey(Agents, models.DO_NOTHING)
+    image = models.ForeignKey(Image, models.SET_NULL, blank=True, null=True)
     date_listed = models.DateTimeField(auto_now_add=True)
 
     class Meta:
