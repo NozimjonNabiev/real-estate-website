@@ -105,13 +105,17 @@ class ReviewsSerializer(ModelSerializer):
 
 
 class EstateSerializer(ModelSerializer):
+    image = ImageSerializer()
     class Meta:
         model = Estate
         fields = '__all__'
 
     def create(self, validated_data):
         if validated_data['agent'] == Agents.objects.get(user=self.context['request'].user):
-            return super().create(validated_data)
+            image_data = validated_data.pop('image')
+            image = Image.objects.create(**image_data)
+            estate = Estate.objects.create(image=image, **validated_data)
+            return estate
         else:
             raise ValidationError('You are not allowed to add estates to this agent')
 

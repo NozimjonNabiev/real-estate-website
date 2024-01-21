@@ -9,7 +9,7 @@ from django.contrib.auth.hashers import make_password
 from api.regression.model import predict_market_value
 
 class Image(models.Model):
-    image = models.ImageField()
+    image = models.URLField()
 
     class Meta:
         db_table = 'images'
