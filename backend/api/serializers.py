@@ -22,11 +22,7 @@ class UsersSerializer(ModelSerializer):
         fields = '__all__'
     
     def create(self, validated_data):
-        user = Users.objects._create_user(
-            email=validated_data['email'],
-            password=validated_data['password'],
-            role=validated_data['role'],
-        )
+        user = Users.objects._create_user(**validated_data)
         return user
     def update(self, instance, validated_data):
         if 'password' in validated_data:
