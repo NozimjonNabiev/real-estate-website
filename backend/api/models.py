@@ -6,6 +6,8 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.contrib.auth.hashers import make_password
 
+from api.regression.model import predict_market_value
+
 class Image(models.Model):
     image = models.ImageField()
 
@@ -167,6 +169,17 @@ class Estate(models.Model):
 
     def __str__(self) -> str:
         return self.title
+    
+    def save(self, *args, **kwargs):
+        try:
+            self.market_value = predict_market_value(
+                district=self.address.address_line_1,
+                bedroom_count=self.bedrooms,
+                area=self.area
+            )
+        except:
+            pass
+        super().save(*args, **kwargs)
 
 class Amenities(models.Model):
     estate = models.ForeignKey(Estate, models.SET_NULL, null=True)
