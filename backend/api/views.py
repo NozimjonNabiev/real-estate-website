@@ -75,7 +75,7 @@ class EstateViewSet(ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['title', 'description', 'address__city', 'address__state', 'address__country',]
     ordering_fields = ['price', 'area', 'date_listed',]
-    filterset_fields = ['bedrooms', 'bathrooms', 'status', 'agent', 'address__city', 'address__state']
+    filterset_fields = ['bedrooms', 'bathrooms', 'status', 'agent', 'address__city', 'address__state', 'rent']
 
     def get_permissions(self):
         if self.action in ['destroy']:
