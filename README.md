@@ -37,5 +37,5 @@ This is the Project
 8. Create a database in PostgreSQL:
 
     ```sql
-    CREATE DATABASE real_estate;
+    CREATE DATABASE realestate;
     ```
