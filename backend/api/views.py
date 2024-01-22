@@ -160,6 +160,11 @@ class FavoritesViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         pass
     
+class AddressesViewSet(ModelViewSet):
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = [IsSelfAndCustomerOrAdmin,]
+
 class PostsViewSet(ModelViewSet):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
