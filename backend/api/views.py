@@ -163,7 +163,7 @@ class FavoritesViewSet(ModelViewSet):
 class AddressesViewSet(ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = [AllowAny]
 
 class PostsViewSet(ModelViewSet):
     queryset = Posts.objects.all()
