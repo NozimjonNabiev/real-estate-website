@@ -75,7 +75,7 @@ class EstateViewSet(ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['title', 'description', 'address__city', 'address__state', 'address__country',]
     ordering_fields = ['price', 'area', 'date_listed',]
-    filterset_fields = ['bedrooms', 'bathrooms', 'status', 'agent', 'address__city', 'address__state', 'rent']
+    filterset_fields = ['bedrooms', 'bathrooms', 'status', 'agent', 'address__city', 'address__state', 'rent', 'type',]
 
     def get_permissions(self):
         if self.action in ['destroy']:
@@ -163,7 +163,7 @@ class FavoritesViewSet(ModelViewSet):
 class AddressesViewSet(ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    permission_classes = [IsSelfAndCustomerOrAdmin,]
+    permission_classes = [AllowAny]
 
 class PostsViewSet(ModelViewSet):
     queryset = Posts.objects.all()
