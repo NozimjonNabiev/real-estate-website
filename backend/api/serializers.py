@@ -106,6 +106,7 @@ class ReviewsSerializer(ModelSerializer):
 
 class EstateSerializer(ModelSerializer):
     image = ImageSerializer()
+    address = AddressSerializer()
     class Meta:
         model = Estate
         fields = '__all__'
@@ -118,13 +119,18 @@ class EstateSerializer(ModelSerializer):
             return estate
         else:
             raise ValidationError('You are not allowed to add estates to this agent')
-            
+
     def update(self, instance, validated_data):
+        address_data = validated_data.pop('address', None)
         image_data = validated_data.pop('image', None)
         if image_data is not None:
             image_serializer = ImageSerializer(instance.image, data=image_data, partial=True)
             image_serializer.is_valid(raise_exception=True)
             image_serializer.save()
+        if address_data is not None:
+            address_serializer = AddressSerializer(instance.address, data=address_data, partial=True)
+            address_serializer.is_valid(raise_exception=True)
+            address_serializer.save()
         return super().update(instance, validated_data)
 
 class AmenitiesSerializer(ModelSerializer):
