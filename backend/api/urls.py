@@ -15,6 +15,7 @@ router.register("estates", EstateViewSet)
 router.register("amenities", AmenitiesViewSet)
 router.register("contracts", ContractsViewSet)
 router.register("favorites", FavoritesViewSet)
+router.register("addresses", AddressesViewSet)
 router.register("posts", PostsViewSet)
 
 
