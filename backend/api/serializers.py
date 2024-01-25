@@ -35,28 +35,40 @@ class UsersSerializer(ModelSerializer):
 
 class AgentsSerializer(ModelSerializer):
     user = UsersSerializer()
+    address = AddressSerializer()
 
     class Meta:
         model = Agents
         fields = '__all__'
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop('user', None)
+
         user_data.update({'role': USER_ROLES.AGENT})
         user_serializer = UsersSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
-        account = Agents.objects.create(user=user, **validated_data)
+
+        address_data = validated_data.pop('address')
+        address = Address.objects.create(**address_data)
+
+        account = Agents.objects.create(user=user, address=address, **validated_data)
         return account
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)
+        address_data = validated_data.pop('address', None)
 
         if user_data is not None:
             user_data.pop('role', None)
             user_serializer = UsersSerializer(instance.user, data=user_data, partial=True)
             user_serializer.is_valid(raise_exception=True)
             user_serializer.save()
+
+        if address_data is not None:
+            address_serializer = AddressSerializer(instance.address, data=address_data, partial=True)
+            address_serializer.is_valid(raise_exception=True)
+            address_serializer.save()
 
         return super().update(instance, validated_data)
 
@@ -69,7 +81,7 @@ class CustomersSerializer(ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop('user', None)
 
         user_data.update({'role': USER_ROLES.CUSTOMER})
         user_serializer = UsersSerializer(data=user_data)
