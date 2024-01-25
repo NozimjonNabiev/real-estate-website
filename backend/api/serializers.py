@@ -62,6 +62,7 @@ class AgentsSerializer(ModelSerializer):
 
 class CustomersSerializer(ModelSerializer):
     user = UsersSerializer()
+    address = AddressSerializer()
 
     class Meta:
         model = Customers
@@ -69,11 +70,16 @@ class CustomersSerializer(ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
+
         user_data.update({'role': USER_ROLES.CUSTOMER})
         user_serializer = UsersSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
-        account = Customers.objects.create(user=user, **validated_data)
+
+        address_data = validated_data.pop('address')
+        address = Address.objects.create(**address_data)
+
+        account = Customers.objects.create(user=user, address=address, **validated_data)
         return account
 
     def update(self, instance, validated_data):
