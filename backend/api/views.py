@@ -24,12 +24,10 @@ class AgentsViewSet(ModelViewSet):
     serializer_class = AgentsSerializer
 
     def get_permissions(self):
-        if self.action in ['list', 'destroy']:
-            self.permission_classes = [IsAdmin,]
         if self.action in ['update', 'partial_update', 'retrieve']:
             self.permission_classes = [IsSelfOrAdmin,]
         else:
-            self.permission_classes = [AllowAny,]
+            self.permission_classes = [IsAdmin,]
         return super(AgentsViewSet, self).get_permissions()
 
 class CustomersViewSet(ModelViewSet):
