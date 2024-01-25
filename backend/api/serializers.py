@@ -14,6 +14,10 @@ class AddressSerializer(ModelSerializer):
         model = Address
         fields = '__all__'
 
+class ContactInfoSerializer(ModelSerializer):
+    class Meta:
+        model = ContactInfo
+        fields = '__all__'
 
 from django.contrib.auth.hashers import make_password
 class UsersSerializer(ModelSerializer):
@@ -35,28 +39,40 @@ class UsersSerializer(ModelSerializer):
 
 class AgentsSerializer(ModelSerializer):
     user = UsersSerializer()
-
+    contact = ContactInfoSerializer()
+    
     class Meta:
         model = Agents
         fields = '__all__'
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop('user', None)
+
         user_data.update({'role': USER_ROLES.AGENT})
         user_serializer = UsersSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
-        account = Agents.objects.create(user=user, **validated_data)
+
+        contact_data = validated_data.pop('contact')
+        contact = ContactInfo.objects.create(**contact_data)
+
+        account = Agents.objects.create(user=user, contact=contact, **validated_data)
         return account
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)
+        contact = validated_data.pop('contact', None)
 
         if user_data is not None:
             user_data.pop('role', None)
             user_serializer = UsersSerializer(instance.user, data=user_data, partial=True)
             user_serializer.is_valid(raise_exception=True)
             user_serializer.save()
+
+        if contact is not None:
+            contact_serializer = ContactInfoSerializer(instance.contact, data=contact, partial=True)
+            contact_serializer.is_valid(raise_exception=True)
+            contact_serializer.save()
 
         return super().update(instance, validated_data)
 
@@ -98,11 +114,6 @@ class CustomersSerializer(ModelSerializer):
             address_serializer.save()
 
         return super().update(instance, validated_data)
-
-class ContactInfoSerializer(ModelSerializer):
-    class Meta:
-        model = ContactInfo
-        fields = '__all__'
 
 class ReviewsSerializer(ModelSerializer):
     class Meta:
