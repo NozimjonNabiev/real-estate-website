@@ -2,9 +2,10 @@ from .models import *
 from .serializers import *
 from .permissions import *
 
-from rest_framework.views import Response, status
+from rest_framework.views import APIView, Response, status
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import Token
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -13,6 +14,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
+
+class GetUserData(APIView):
+    permission_classes = [IsAuthenticated,]
+
+    def get(self, request):
+        user_data = { 'user_id': request.user.id }
+        return Response(user_data, status=status.HTTP_200_OK)
 
 class UserViewSet(ModelViewSet):
     queryset = Users.objects.all()
