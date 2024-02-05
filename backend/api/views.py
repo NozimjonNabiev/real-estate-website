@@ -34,7 +34,7 @@ class AgentsViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'destroy']:
             self.permission_classes = [IsAdmin,]
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ['retrieve', 'update', 'partial_update']:
             self.permission_classes = [IsSelfOrAdmin,]
         else:
             self.permission_classes = [AllowAny,]
